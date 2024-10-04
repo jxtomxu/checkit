@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查询信息</title>
+    <style>
+        /* 保持其他样式不变 */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus {
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24,144,255,0.2);
+            outline: none;
+        }
+        /* 其他样式保持不变 */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>查询信息</h1>
+        <div class="input-group">
+            <label for="inputField">请输入ID或API-KEY</label>
+            <input type="text" id="inputField">
+        </div>
+        <button id="submitBtn" onclick="submitQuery()">提交查询</button>
+        <div class="loading" id="loading">正在查询，请稍候...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let lastSubmitTime = 0;
+
+        function submitQuery() {
+            const input = document.getElementById('inputField').value.trim();
+            const currentTime = new Date().getTime();
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (currentTime - lastSubmitTime < 8000) {
+                alert('请等待8秒后再次提交');
+                return;
+            }
+
+            if (input === '') {
+                alert('请输入ID或API-KEY');
+                return;
+            }
+
+            const data = {
+                input: input
+            };
+
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            submitBtn.disabled = true;
+
+            fetch('https://n8n.colorland.top/webhook/f9c1838c-8b3e-4c01-9fad-b7de61196969', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify([data])
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('网络响应不正常');
+            })
+            .then(data => {
+                displayResult(data);
+            })
+            .catch(error => {
+                console.error('错误:', error);
+                displayError('提供的信息有误');
+                lastSubmitTime = currentTime;
+            })
+            .finally(() => {
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+            });
+        }
+
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            if (data.USER_ID) {
+                resultDiv.innerHTML = `
+                    <div class="result-item"><strong>ID:</strong> ${data.USER_ID}</div>
+                    <div class="result-item"><strong>API-KEY:</strong> ${data.API_KEY}</div>
+                    <div class="result-item"><strong>有效期至:</strong> ${data.Expired_time}</div>
+                `;
+            } else {
+                resultDiv.innerHTML = `<p class="error">${data.info}</p>`;
+            }
+            resultDiv.style.display = 'block';
+        }
+
+        function displayError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<p class="error">${message}</p>`;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
