@@ -5,39 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>查询信息</title>
     <style>
-        /* 保持其他样式不变 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 32px;
+            width: 100%;
+            max-width: 360px;
+        }
+        h1 {
+            color: #1890ff;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 22px;
+            font-weight: 500;
+        }
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
+            margin-bottom: 6px;
+            font-weight: 400;
+            color: #5c5c5c;
+            font-size: 14px;
         }
         input {
             width: 100%;
-            padding: 12px;
+            padding: 10px 12px;
             border: 1px solid #d9d9d9;
-            border-radius: 6px;
+            border-radius: 4px;
             box-sizing: border-box;
-            font-size: 16px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            font-size: 14px;
+            transition: all 0.3s;
         }
         input:focus {
             border-color: #40a9ff;
             box-shadow: 0 0 0 2px rgba(24,144,255,0.2);
             outline: none;
         }
-        /* 其他样式保持不变 */
+        button {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        button:disabled {
+            background-color: #d9d9d9;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            color: #1890ff;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        #result {
+            display: none;
+            margin-top: 24px;
+            padding: 16px;
+            background-color: #f6f6f6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .result-item {
+            margin-bottom: 12px;
+            background-color: #ffffff;
+            border-radius: 4px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .result-item strong {
+            color: #1890ff;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .result-item span {
+            display: block;
+            word-break: break-all;
+            color: #333;
+        }
+        .error {
+            color: #ff4d4f;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>查询信息</h1>
         <div class="input-group">
-            <label for="inputField">请输入ID或API-KEY</label>
-            <input type="text" id="inputField">
+            <label for="inputField">请输入ID或API-KEY:</label>
+            <input type="text" id="inputField" placeholder="输入ID或API-KEY">
         </div>
         <button id="submitBtn" onclick="submitQuery()">提交查询</button>
         <div class="loading" id="loading">正在查询，请稍候...</div>
@@ -103,14 +181,23 @@
             const resultDiv = document.getElementById('result');
             if (data.USER_ID) {
                 resultDiv.innerHTML = `
-                    <div class="result-item"><strong>ID:</strong> ${data.USER_ID}</div>
-                    <div class="result-item"><strong>API-KEY:</strong> ${data.API_KEY}</div>
-                    <div class="result-item"><strong>有效期至:</strong> ${data.Expired_time}</div>
+                    <div class="result-item">
+                        <strong>ID:</strong>
+                        <span>${data.USER_ID}</span>
+                    </div>
+                    <div class="result-item">
+                        <strong>API-KEY:</strong>
+                        <span>${data.API_KEY}</span>
+                    </div>
+                    <div class="result-item">
+                        <strong>有效期至:</strong>
+                        <span>${data.Expired_time}</span>
+                    </div>
                 `;
+                resultDiv.style.display = 'block';
             } else {
-                resultDiv.innerHTML = `<p class="error">${data.info}</p>`;
+                displayError(data.info);
             }
-            resultDiv.style.display = 'block';
         }
 
         function displayError(message) {
